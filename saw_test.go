@@ -70,18 +70,18 @@ func BenchmarkSimpleSAW(b *testing.B) {
 
 func BenchmarkSTRSAW(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		STRSAW(300, 30)
+		STRSAW(100, 30)
 	}
 }
 
 func BenchmarkMaplessSA(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		MaplessSA(300, 30)
+		MaplessSA(100, 30)
 	}
 }
 
 func BenchmarkMaplessSABig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		MaplessSA(2000, 30)
+		MaplessSA(1000, 30)
 	}
 }
