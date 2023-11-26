@@ -2,7 +2,6 @@ package main
 
 import (
 	"math/rand"
-	"time"
 )
 
 func CollideOrAdd(visited *map[vec2]interface{}, pos vec2) bool {
@@ -15,7 +14,7 @@ func CollideOrAdd(visited *map[vec2]interface{}, pos vec2) bool {
 }
 func SimpleSAW(n int) (*[]vec2, int) {
 	res := make([]vec2, n+1)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(rand.Int63()))
 	attempts := 0
 	for true {
 		attempts += 1
@@ -42,7 +41,7 @@ func SimpleSAW(n int) (*[]vec2, int) {
 // STRSAW stands for Single Threaded Self Avoiding Walk 1
 func STRSAW(n, blockSize int) *[]vec2 {
 	res := make([]vec2, n+1)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(rand.Int63()))
 
 	strsawHelper(1, n+1, blockSize, &res, r)
 	return &res
@@ -156,7 +155,7 @@ func CollideOrAddSort(a, b int, value vec2, list *[]vec2) bool {
 func MaplessSA(n, blockSize int) *[]vec2 {
 	res := make([]vec2, n+1)
 	sorted := make([]vec2, n+1)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(rand.Int63()))
 
 	maplessHelper(1, n+1, blockSize, &res, &sorted, r)
 	return &res

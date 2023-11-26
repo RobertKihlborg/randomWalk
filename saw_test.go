@@ -24,8 +24,8 @@ func testSAW(t *testing.T, fun sawfunc, ns []int, retries int) {
 		for i := 0; i < retries; i++ {
 			pos := fun(n)
 			if UniquePosCount(pos) != n+1 {
-				t.Log(pos)
 				t.Fatalf("Wrong amount of steps in walk")
+
 			}
 		}
 	}
@@ -62,6 +62,16 @@ func TestMaplessSA(t *testing.T) {
 	testSAW(t, fun, ns, retries)
 }
 
+func TestParallelSA(t *testing.T) {
+	ns := []int{3, 10, 20, 200}
+	retries := 20
+	var fun = func(n int) *[]vec2 {
+		pos := ParallelSA(n, 30)
+		return pos
+	}
+	testSAW(t, fun, ns, retries)
+}
+
 func BenchmarkSimpleSAW(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		SimpleSAW(100)
@@ -82,6 +92,30 @@ func BenchmarkMaplessSA(b *testing.B) {
 
 func BenchmarkMaplessSABig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		MaplessSA(1000, 30)
+		MaplessSA(2000, 30)
+	}
+}
+
+func BenchmarkParallelSA(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ParallelSA(100, 30)
+	}
+}
+
+func BenchmarkParallelSABig(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ParallelSA(2000, 30)
+	}
+}
+
+func BenchmarkPooledMaplessSA(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PooledMaplessSA(100, 30, 10)
+	}
+}
+
+func BenchmarkPooledMaplessSABig(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PooledMaplessSA(2000, 30, 10)
 	}
 }

@@ -65,10 +65,10 @@ func WriteJSON(positions []vec2, name string) {
 
 }
 
-var right = vec2(1 << 16)
-var left = -right
-var up = vec2(1)
-var down = -up
+const right = vec2(1 << 16)
+const left = -right
+const up = vec2(1)
+const down = -up
 
 var unitVectors = []vec2{right, up, left, down}
 
@@ -84,15 +84,26 @@ func SimpleRandomWalk(n int) *[]vec2 {
 }
 
 func main() {
-	//fmt.Printf("%v, %v, %v, %v, %v, %v, %v, %v", right, left, up, down, right+up, right+down, left+up, left+down)
 
-	n := 800
+	n := 100
 	var err error
 	if len(os.Args) > 1 {
 		if n, err = strconv.Atoi(os.Args[1]); err != nil {
 			log.Fatalf("Invalid walk length")
 		}
 	}
-	pos := MaplessSA(n, 30)
+	procs := 10
+	if len(os.Args) > 2 {
+		if procs, err = strconv.Atoi(os.Args[2]); err != nil {
+			log.Fatalf("Invalid process count")
+		}
+	}
+
+	start := time.Now()
+	pos := PooledMaplessSA(n, 30, procs)
+
 	WriteJSON(*pos, fmt.Sprintf("output/sa%v", n))
+
+	elapsed := time.Since(start)
+	log.Printf("Search took %s", elapsed)
 }
