@@ -52,6 +52,16 @@ func TestSTRSAW(t *testing.T) {
 	testSAW(t, fun, ns, retries)
 }
 
+func TestMaplessSAOld(t *testing.T) {
+	ns := []int{3, 10, 20, 200}
+	retries := 20
+	var fun = func(n int) *[]vec2 {
+		pos := MaplessSAOld(n, 30)
+		return pos
+	}
+	testSAW(t, fun, ns, retries)
+}
+
 func TestMaplessSA(t *testing.T) {
 	ns := []int{3, 10, 20, 200}
 	retries := 20
@@ -84,6 +94,18 @@ func BenchmarkSTRSAW(b *testing.B) {
 	}
 }
 
+func BenchmarkMaplessSAOld(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		MaplessSAOld(100, 30)
+	}
+}
+
+func BenchmarkMaplessSAOldBig(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		MaplessSAOld(1000, 30)
+	}
+}
+
 func BenchmarkMaplessSA(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		MaplessSA(100, 30)
@@ -104,18 +126,30 @@ func BenchmarkParallelSA(b *testing.B) {
 
 func BenchmarkParallelSABig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		ParallelSA(2000, 30)
+		ParallelSA(1000, 30)
+	}
+}
+
+func BenchmarkPooledMaplessSAOld(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PooledSA(100, walkers["maplessOld"], 10)
+	}
+}
+
+func BenchmarkPooledMaplessSAOldBig(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		PooledSA(2000, walkers["maplessOld"], 10)
 	}
 }
 
 func BenchmarkPooledMaplessSA(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		PooledMaplessSA(100, 30, 10)
+		PooledSA(100, walkers["mapless"], 10)
 	}
 }
 
 func BenchmarkPooledMaplessSABig(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		PooledMaplessSA(2000, 30, 10)
+		PooledSA(2000, walkers["mapless"], 10)
 	}
 }

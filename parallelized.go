@@ -91,6 +91,10 @@ func newSearcher(a, b, blockSize int, list, sorted *[]vec2, r *rand.Rand) search
 	return searcher(&searchNode{a, b, (a + b) / 2, list, sorted, r, leftChild, rightChild, make(chan bool), make(chan bool)})
 }
 
+func DefaultParallel(n int) *[]vec2 {
+	return ParallelSA(n, 30)
+}
+
 func ParallelSA(n, blockSize int) *[]vec2 {
 	res := make([]vec2, n+1)
 	sorted := make([]vec2, n+1)

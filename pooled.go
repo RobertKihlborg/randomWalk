@@ -1,13 +1,12 @@
 package main
 
-func PooledMaplessSA(n, blockSize, poolSize int) *[]vec2 {
+func PooledSA(n int, fun Walker, poolSize int) *[]vec2 {
 	resultChan := make(chan *[]vec2)
-	fun := func(c chan *[]vec2) {
-		c <- MaplessSA(n, blockSize)
+	droplet := func(c chan *[]vec2) {
+		c <- fun(n)
 	}
-
 	for i := 0; i < poolSize; i++ {
-		go fun(resultChan)
+		go droplet(resultChan)
 	}
 
 	return <-resultChan

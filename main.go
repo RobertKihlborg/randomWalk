@@ -83,24 +83,61 @@ func SimpleRandomWalk(n int) *[]vec2 {
 	return &res
 }
 
+type Walker func(n int) *[]vec2
+
+var walkers = map[string]Walker{
+	"simple": func(n int) *[]vec2 {
+		res, _ := SimpleSAW(n)
+		return res
+	},
+	"maplessOld": func(n int) *[]vec2 {
+		return MaplessSAOld(n, 30)
+	},
+
+	"mapless": DefaultMapless,
+
+	"parallel": DefaultParallel,
+}
+
 func main() {
 
 	n := 100
 	var err error
-	if len(os.Args) > 1 {
+	if len(os.Args) >= 2 {
 		if n, err = strconv.Atoi(os.Args[1]); err != nil {
 			log.Fatalf("Invalid walk length")
 		}
 	}
+
 	procs := 10
-	if len(os.Args) > 2 {
+	if len(os.Args) >= 3 {
 		if procs, err = strconv.Atoi(os.Args[2]); err != nil {
 			log.Fatalf("Invalid process count")
 		}
 	}
 
+	walker := walkers["mapless"]
+	if len(os.Args) >= 4 {
+		if testWalker, ok := walkers[os.Args[3]]; ok {
+			walker = testWalker
+		}
+	}
+
+	if len(os.Args) > 4 {
+		log.Fatal("Too many arguments")
+	}
+
+	//fmt.Printf("%v, %v, %v", n, procs, walker)
+
+	fun := walker
+	if procs > 1 {
+		fun = func(n int) *[]vec2 {
+			return PooledSA(n, walker, procs)
+		}
+	}
+
 	start := time.Now()
-	pos := PooledMaplessSA(n, 30, procs)
+	pos := fun(n)
 
 	WriteJSON(*pos, fmt.Sprintf("output/sa%v", n))
 
