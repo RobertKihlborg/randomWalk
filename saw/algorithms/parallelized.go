@@ -1,7 +1,8 @@
-package main
+package algorithms
 
 import (
 	"math/rand"
+	. "randomWalk/saw"
 )
 
 type searcher interface {
@@ -10,7 +11,7 @@ type searcher interface {
 
 type searchNode struct {
 	a, b, mid    int
-	list, sorted *[]vec2
+	list, sorted *[]Vec2
 	r            *rand.Rand
 	left, right  searcher
 	chl, chr     chan bool
@@ -50,7 +51,7 @@ func (s searchNode) search(signal chan bool) {
 
 type searchLeaf struct {
 	a, b         int
-	list, sorted *[]vec2
+	list, sorted *[]Vec2
 	r            *rand.Rand
 }
 
@@ -60,10 +61,10 @@ func (s searchLeaf) search(signal chan bool) {
 		for true {
 			direction := s.r.Intn(4)
 			fail := false
-			currPos := vec2(0)
+			currPos := Vec2(0)
 			for i := s.a; i < s.b; i++ {
 				direction = (direction + s.r.Intn(3) - 1 + 4) % 4 // Add random in interval [-1, 1] and modulo
-				currPos += unitVectors[direction]
+				currPos += UnitVectors[direction]
 				(*s.list)[i] = currPos // Take a step
 				fail = CollideOrAddSort(s.a, i, currPos, s.sorted)
 				if fail {
@@ -79,7 +80,7 @@ func (s searchLeaf) search(signal chan bool) {
 
 }
 
-func newSearcher(a, b, blockSize int, list, sorted *[]vec2, r *rand.Rand) searcher {
+func newSearcher(a, b, blockSize int, list, sorted *[]Vec2, r *rand.Rand) searcher {
 	if b-a <= blockSize {
 		return searcher(&searchLeaf{a, b, list, sorted, r})
 	}
@@ -91,13 +92,9 @@ func newSearcher(a, b, blockSize int, list, sorted *[]vec2, r *rand.Rand) search
 	return searcher(&searchNode{a, b, (a + b) / 2, list, sorted, r, leftChild, rightChild, make(chan bool), make(chan bool)})
 }
 
-func DefaultParallel(n int) *[]vec2 {
-	return ParallelSA(n, 30)
-}
-
-func ParallelSA(n, blockSize int) *[]vec2 {
-	res := make([]vec2, n+1)
-	sorted := make([]vec2, n+1)
+func Parallel(n, blockSize int) *[]Vec2 {
+	res := make([]Vec2, n+1)
+	sorted := make([]Vec2, n+1)
 	r := rand.New(rand.NewSource(rand.Int63()))
 	s := newSearcher(1, n+1, blockSize, &res, &sorted, r)
 	c := make(chan bool)

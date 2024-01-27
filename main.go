@@ -1,103 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
+	. "randomWalk/saw"
+	. "randomWalk/saw/algorithms"
 	"strconv"
 	"time"
 )
-
-type vec2 int32
-
-func (v vec2) xy() (int16, int16) {
-	y := int16(v % (1 << 16))
-	x := int16((int32(v) - int32(y)) / (1 << 16))
-	return x, y
-}
-func (v vec2) String() string {
-	x, y := v.xy()
-	return fmt.Sprintf("(%v, %v)", x, y)
-}
-
-func WriteJSON(positions []vec2, name string) {
-	length := len(positions)
-	xList := make([]int16, length)
-	yList := make([]int16, length)
-	for i, v := range positions {
-		x, y := v.xy()
-		xList[i] = x
-		yList[i] = y
-	}
-
-	file, err := os.Create(fmt.Sprintf("%v.json", name))
-
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			fmt.Println("Error closing file:", cerr)
-		}
-	}()
-
-	// Create a JSON encoder
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "\t")
-	dataObject := struct {
-		X []int16 `json:"x"`
-		Y []int16 `json:"y"`
-	}{xList, yList}
-
-	// Encode the data and write it to the file
-	err = encoder.Encode(dataObject)
-
-	if err != nil {
-		fmt.Println("Error encoding JSON:", err)
-		return
-	}
-
-	fmt.Println("JSON data written to output.json")
-
-}
-
-const right = vec2(1 << 16)
-const left = -right
-const up = vec2(1)
-const down = -up
-
-var unitVectors = []vec2{right, up, left, down}
-
-func SimpleRandomWalk(n int) *[]vec2 {
-	res := make([]vec2, n+1)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	for i := 0; i < n; i++ {
-		res[i+1] = res[i] + unitVectors[r.Intn(4)]
-	}
-
-	return &res
-}
-
-type Walker func(n int) *[]vec2
-
-var walkers = map[string]Walker{
-	"simple": func(n int) *[]vec2 {
-		res, _ := SimpleSAW(n)
-		return res
-	},
-	"maplessOld": func(n int) *[]vec2 {
-		return MaplessSAOld(n, 30)
-	},
-
-	"mapless": DefaultMapless,
-
-	"parallel": DefaultParallel,
-}
 
 func main() {
 
@@ -116,9 +27,9 @@ func main() {
 		}
 	}
 
-	walker := walkers["mapless"]
+	walker := ZombieWalkers["mapless"]
 	if len(os.Args) >= 4 {
-		if testWalker, ok := walkers[os.Args[3]]; ok {
+		if testWalker, ok := ZombieWalkers[os.Args[3]]; ok {
 			walker = testWalker
 		}
 	}
@@ -131,8 +42,8 @@ func main() {
 
 	fun := walker
 	if procs > 1 {
-		fun = func(n int) *[]vec2 {
-			return PooledSA(n, walker, procs)
+		fun = func(n int) *[]Vec2 {
+			return ZombiePool(n, walker, procs)
 		}
 	}
 

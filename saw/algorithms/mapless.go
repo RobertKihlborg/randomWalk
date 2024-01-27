@@ -1,8 +1,11 @@
-package main
+package algorithms
 
-import "math/rand"
+import (
+	"math/rand"
+	. "randomWalk/saw"
+)
 
-func CollideOrAddSort(a, b int, value vec2, list *[]vec2) bool {
+func CollideOrAddSort(a, b int, value Vec2, list *[]Vec2) bool {
 	//fmt.Printf("Trying to add %v to %v, (a,b) = (%v,%v)\n", value, (*list)[a:b], a, b)
 	if value == 0 {
 		return true
@@ -54,24 +57,24 @@ func CollideOrAddSort(a, b int, value vec2, list *[]vec2) bool {
 	return false
 }
 
-func MaplessSAOld(n, blockSize int) *[]vec2 {
-	res := make([]vec2, n+1)
-	sorted := make([]vec2, n+1)
+func MaplessOld(n, blockSize int) *[]Vec2 {
+	res := make([]Vec2, n+1)
+	sorted := make([]Vec2, n+1)
 	r := rand.New(rand.NewSource(rand.Int63()))
 
 	maplessOldHelper(1, n+1, blockSize, &res, &sorted, r)
 	return &res
 }
 
-func maplessOldHelper(a, b, blockSize int, pos *[]vec2, sortedPos *[]vec2, r *rand.Rand) {
+func maplessOldHelper(a, b, blockSize int, pos *[]Vec2, sortedPos *[]Vec2, r *rand.Rand) {
 	if b-a <= blockSize {
 		for true {
 			direction := r.Intn(4)
 			fail := false
-			currPos := vec2(0)
+			currPos := Vec2(0)
 			for i := a; i < b; i++ {
 				direction = (direction + r.Intn(3) - 1 + 4) % 4 // Add random in interval [-1, 1] and modulo
-				currPos += unitVectors[direction]
+				currPos += UnitVectors[direction]
 				(*pos)[i] = currPos // Take a step
 				fail = CollideOrAddSort(a, i, currPos, sortedPos)
 				if fail {
@@ -109,28 +112,24 @@ func maplessOldHelper(a, b, blockSize int, pos *[]vec2, sortedPos *[]vec2, r *ra
 	}
 }
 
-func DefaultMapless(n int) *[]vec2 {
-	return MaplessSA(n, 30)
-}
-
-func MaplessSA(n, blockSize int) *[]vec2 {
-	res := make([]vec2, n+1)
-	sorted := make([]vec2, n+1)
+func ZombieMapless(n, blockSize int) *[]Vec2 {
+	res := make([]Vec2, n+1)
+	sorted := make([]Vec2, n+1)
 	r := rand.New(rand.NewSource(rand.Int63()))
 
-	maplessHelper(r.Intn(4), 1, n+1, blockSize, &res, &sorted, r)
+	zombieMaplessHelper(r.Intn(4), 1, n+1, blockSize, &res, &sorted, r)
 	return &res
 }
 
-func maplessHelper(prevDir, a, b, blockSize int, pos *[]vec2, sortedPos *[]vec2, r *rand.Rand) int {
+func zombieMaplessHelper(prevDir, a, b, blockSize int, pos *[]Vec2, sortedPos *[]Vec2, r *rand.Rand) int {
 	if b-a <= blockSize {
 		for true {
 			direction := prevDir
 			fail := false
-			currPos := vec2(0)
+			currPos := Vec2(0)
 			for i := a; i < b; i++ {
 				direction = (direction + r.Intn(3) - 1 + 4) % 4 // Add random in interval [-1, 1] and modulo
-				currPos += unitVectors[direction]
+				currPos += UnitVectors[direction]
 				(*pos)[i] = currPos // Take a step
 				fail = CollideOrAddSort(a, i, currPos, sortedPos)
 				if fail {
@@ -148,8 +147,8 @@ func maplessHelper(prevDir, a, b, blockSize int, pos *[]vec2, sortedPos *[]vec2,
 
 	for true {
 		fail := false
-		direction := maplessHelper(prevDir, a, mid, blockSize, pos, sortedPos, r)
-		direction = maplessHelper(direction, mid, b, blockSize, pos, sortedPos, r)
+		direction := zombieMaplessHelper(prevDir, a, mid, blockSize, pos, sortedPos, r)
+		direction = zombieMaplessHelper(direction, mid, b, blockSize, pos, sortedPos, r)
 
 		// Note which nodes were visited in the first part (return this directly maybe?)
 		lastPosOfFirst := (*pos)[mid-1]
@@ -167,4 +166,62 @@ func maplessHelper(prevDir, a, b, blockSize int, pos *[]vec2, sortedPos *[]vec2,
 		}
 	}
 	return 0 // Unreachable anyway
+}
+
+func Mapless(n, blockSize int, stopWalking *bool) *[]Vec2 {
+	res := make([]Vec2, n+1)
+	sorted := make([]Vec2, n+1)
+	r := rand.New(rand.NewSource(rand.Int63()))
+
+	maplessHelper(r.Intn(4), 1, n+1, blockSize, &res, &sorted, r, stopWalking)
+	return &res
+}
+
+func maplessHelper(prevDir, a, b, blockSize int, pos *[]Vec2, sortedPos *[]Vec2, r *rand.Rand, stopWalking *bool) int {
+	if b-a <= blockSize {
+		for !(*stopWalking) {
+			direction := prevDir
+			fail := false
+			currPos := Vec2(0)
+			for i := a; i < b; i++ {
+				direction = (direction + r.Intn(3) - 1 + 4) % 4 // Add random in interval [-1, 1] and modulo
+				currPos += UnitVectors[direction]
+				(*pos)[i] = currPos // Take a step
+				fail = CollideOrAddSort(a, i, currPos, sortedPos)
+				if fail {
+					break
+				}
+			}
+			if !fail {
+				return direction
+			}
+		}
+		return 0
+	}
+
+	// Case for when to do recursive call
+	mid := (a + b) / 2
+
+	for !(*stopWalking) {
+		fail := false
+		direction := zombieMaplessHelper(prevDir, a, mid, blockSize, pos, sortedPos, r)
+		direction = zombieMaplessHelper(direction, mid, b, blockSize, pos, sortedPos, r)
+
+		// Note which nodes were visited in the first part (return this directly maybe?)
+		lastPosOfFirst := (*pos)[mid-1]
+
+		// Check which nodes were visited in the second part if we put it at the end of the first, and check for collisions
+		for i := mid; i < b; i++ {
+			(*pos)[i] += lastPosOfFirst
+			fail = CollideOrAddSort(a, i, (*sortedPos)[i]+lastPosOfFirst, sortedPos)
+			if fail {
+				break
+			}
+		}
+		if !fail {
+			return direction
+		}
+	}
+
+	return 0
 }
