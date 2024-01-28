@@ -9,8 +9,8 @@ import (
 
 type VectorInt []int64
 
-func ToFloatVector(v VectorInt) space.Vector {
-	res := make(space.Vector, len(v))
+func ToFloatVector(v VectorInt) space.VectorFloat {
+	res := make(space.VectorFloat, len(v))
 	for i, val := range v {
 		res[i] = float64(val)
 	}
@@ -21,22 +21,11 @@ func add(a VectorInt, b VectorInt) VectorInt {
 	if len(a) != len(b) {
 		panic(fmt.Sprintf("Mismatched dimensions %v and %v.", len(a), len(b)))
 	}
+	c := make(VectorInt, len(a))
 	for i := 0; i < len(a); i++ {
-		a[i] = a[i] + b[i]
+		c[i] = a[i] + b[i]
 	}
-	return a
-}
-
-func equals(a VectorInt, b VectorInt) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := 0; i < len(a); i++ {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
+	return c
 }
 
 func isZero(a VectorInt) bool {
@@ -48,18 +37,24 @@ func isZero(a VectorInt) bool {
 	return true
 }
 
+func toKey(v VectorInt) string {
+	return fmt.Sprint(v)
+}
+
 func IsPointIntersecting(walk []VectorInt) bool {
-	for i, p1 := range walk {
-		for _, p2 := range walk[:i] {
-			if equals(p1, p2) {
-				return true
-			}
+	visited := make(map[string]interface{})
+	for _, p := range walk {
+		key := toKey(p)
+		_, alreadyVisited := visited[key]
+		visited[key] = nil
+		if alreadyVisited {
+			return true
 		}
 	}
 	return false
 }
 
-func RandomDirectionN(n int, rand rand.Rand) VectorInt {
+func RandomDirectionN(n int, rand *rand.Rand) VectorInt {
 	res := make(VectorInt, n)
 	index := rand.Intn(n)
 	sign := rand.Intn(2)*2 - 1
@@ -68,7 +63,7 @@ func RandomDirectionN(n int, rand rand.Rand) VectorInt {
 	return res
 }
 
-func NonreturningRandomDirection(prev VectorInt, r rand.Rand) VectorInt {
+func NonreturningRandomDirection(prev VectorInt, r *rand.Rand) VectorInt {
 	n := len(prev)
 	for true {
 		test := RandomDirectionN(n, r)
@@ -79,8 +74,8 @@ func NonreturningRandomDirection(prev VectorInt, r rand.Rand) VectorInt {
 	panic("This should be completely unreachable, it's literally after a 'while true' loop")
 }
 
-func CreateRandomDirectionFunctionInt(n int) RandomFunction[VectorInt] {
+func CreateRandomDirectionFunctionDim(dim int) RandomFunction[VectorInt] {
 	return func(r *rand.Rand) VectorInt {
-		return RandomDirectionN(n, *r)
+		return RandomDirectionN(dim, r)
 	}
 }

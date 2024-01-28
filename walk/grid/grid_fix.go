@@ -2,6 +2,8 @@ package grid
 
 import (
 	"fmt"
+	"math/bits"
+	"math/rand"
 )
 
 const intSize = 1 << 16
@@ -56,8 +58,8 @@ const inwards = 1 << 48
 const outwards = -inwards
 
 var UnitVectors2D = []Vec2{right, up, left, down}
-var UnitVectors3D = []Vec3{right, up, left, down, front, back}
-var UnitVectors4D = []Vec4{right, up, left, down, front, back, inwards, outwards}
+var UnitVectors3D = []Vec3{right, up, front, left, down, back}
+var UnitVectors4D = []Vec4{right, up, front, inwards, left, down, back, outwards}
 
 func IsPointIntersectingFix[T Vec2 | Vec3 | Vec4](walk []T) bool {
 	visited := make(map[T]interface{})
@@ -69,4 +71,26 @@ func IsPointIntersectingFix[T Vec2 | Vec3 | Vec4](walk []T) bool {
 		}
 	}
 	return false
+}
+
+func RandomIntExcept(n, except int, r *rand.Rand) int {
+	if bits.OnesCount(uint(n)) == 1 {
+		return randomIntExcept1(n, except, r)
+	}
+	return randomIntExcept2(n, except, r)
+}
+
+func randomIntExcept1(n, except int, r *rand.Rand) int {
+	x := r.Intn(n)
+	for x == except {
+		x = rand.Intn(n)
+	}
+	return x
+}
+func randomIntExcept2(n, except int, r *rand.Rand) int {
+	x := r.Intn(n - 1)
+	if x >= except {
+		x++
+	}
+	return x
 }

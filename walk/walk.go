@@ -1,6 +1,8 @@
 package walk
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type Walker[T any] func(n int) []T
 
