@@ -4,12 +4,20 @@ import (
 	"math/rand"
 )
 
-type Walker[T any] func(n int) []T
+type Walker[T any] func(n int) []Vector[T]
 
-type PoolableWalker[T any] func(n int, r *rand.Rand, interrupt *bool) []T
+type PoolableWalker[T any] func(n int, r *rand.Rand, interrupt *bool) []Vector[T]
 
-type CollisionChecker[T any] func(walk []T) bool
+type CollisionChecker[T any] func(walk []Vector[T]) bool
 
-type RandomFunction[T any] func(*rand.Rand) T
+type LatestCollisionChecker[T any] func(point Vector[T], walk []Vector[T]) bool
 
-type NonreturningRandomFunction[T any] func(prev T, r *rand.Rand) T
+type RandomFunction[T any] func(*rand.Rand) Vector[T]
+
+type NonreturningRandomFunction[T any] func(prev Vector[T], r *rand.Rand) Vector[T]
+
+type Vector[T any] interface {
+	Get(i int) T
+	Size() int
+	Add(Vector[T]) Vector[T]
+}

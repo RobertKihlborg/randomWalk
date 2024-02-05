@@ -1,7 +1,8 @@
-package grid
+package grid_optimized
 
 import (
 	"fmt"
+	"randomWalk/walk"
 	"testing"
 )
 
@@ -46,7 +47,7 @@ func TestCreateNaiveWalker(t *testing.T) {
 		t.Run(fmt.Sprintf("SAW %vD", dim), func(t *testing.T) {
 			for _, n := range ns {
 				res := walker(n)
-				if len(res) != (n+1) || IsPointIntersecting(res) {
+				if len(res) != (n+1) || walk.IsPointIntersecting(res) {
 					t.Fatalf("n=%v", n)
 				}
 			}
@@ -95,7 +96,7 @@ func TestCreateWalker(t *testing.T) {
 		t.Run(fmt.Sprintf("SAW %vD", dim), func(t *testing.T) {
 			for _, n := range ns {
 				res := walker(n)
-				if len(res) != (n+1) || IsPointIntersecting(res) {
+				if len(res) != (n+1) || walk.IsPointIntersecting(res) {
 					t.Fatalf("n=%v", n)
 				}
 			}

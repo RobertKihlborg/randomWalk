@@ -1,4 +1,4 @@
-package grid
+package grid_optimized
 
 import (
 	"fmt"
