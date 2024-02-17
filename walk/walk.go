@@ -21,3 +21,7 @@ type Vector[T any] interface {
 	Size() int
 	Add(Vector[T]) Vector[T]
 }
+
+type GridWalk[T int] []Vector[T]
+
+type SpaceWalk []Vector[float64]
